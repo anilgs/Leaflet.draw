@@ -1,5 +1,5 @@
 /*
- Leaflet.draw 1.0.4, a plugin that adds drawing and editing tools to Leaflet powered maps.
+ Leaflet.draw 1.0.4+d064901, a plugin that adds drawing and editing tools to Leaflet powered maps.
  (c) 2012-2017, Jacob Toye, Jon West, Smartrak, Leaflet
 
  https://github.com/Leaflet/Leaflet.draw
@@ -8,7 +8,7 @@
 (function (window, document, undefined) {/**
  * Leaflet.draw assumes that you have already included the Leaflet library.
  */
-L.drawVersion = "1.0.4";
+L.drawVersion = "1.0.4+d064901";
 /**
  * @class L.Draw
  * @aka Draw
@@ -53,7 +53,17 @@ L.drawVersion = "1.0.4";
  * or GeometryCollection. If you need to add multigeometry features to the draw plugin, convert them to a
  * FeatureCollection of non-multigeometries (Points, LineStrings, or Polygons).
  */
-L.Draw = {};
+ L.Draw = {
+	EventsMixin: (function() {
+		var version = L.version.split(".");
+		//If Version is < 1.2.0
+		if (parseInt(version[0], 10) < 1 || (parseInt(version[0], 10) === 1 && parseInt(version[1], 10) < 2)) {
+			return L.Mixin.Events;
+		} else {
+			return L.Evented.prototype;
+		}
+	})(),
+};
 
 /**
  * @class L.drawLocal
@@ -383,6 +393,7 @@ L.Draw = L.Draw || {};
  * @aka Draw.Feature
  */
 L.Draw.Feature = L.Handler.extend({
+	includes: [L.Draw.EventsMixin],
 
 	// @method initialize(): void
 	initialize: function (map, options) {
@@ -397,13 +408,6 @@ L.Draw.Feature = L.Handler.extend({
 		}
 		L.setOptions(this, options);
 
-		var version = L.version.split('.');
-		//If Version is >= 1.2.0
-		if (parseInt(version[0], 10) === 1 && parseInt(version[1], 10) >= 2) {
-			L.Draw.Feature.include(L.Evented.prototype);
-		} else {
-			L.Draw.Feature.include(L.Mixin.Events);
-		}
 	},
 
 	// @method enable(): void
@@ -3591,6 +3595,8 @@ L.Map.addInitHook(function () {
  * ```
  */
 L.Toolbar = L.Class.extend({
+	includes: [L.Draw.EventsMixin],
+
 	// @section Methods for modifying the toolbar
 
 	// @method initialize(options): void
@@ -3602,13 +3608,6 @@ L.Toolbar = L.Class.extend({
 		this._actionButtons = [];
 		this._activeMode = null;
 
-		var version = L.version.split('.');
-		//If Version is >= 1.2.0
-		if (parseInt(version[0], 10) === 1 && parseInt(version[1], 10) >= 2) {
-			L.Toolbar.include(L.Evented.prototype);
-		} else {
-			L.Toolbar.include(L.Mixin.Events);
-		}
 	},
 
 	// @method enabled(): boolean
@@ -4321,6 +4320,7 @@ L.EditToolbar.Edit = L.Handler.extend({
 	statics: {
 		TYPE: 'edit'
 	},
+	includes: [L.Draw.EventsMixin],
 
 	// @method intialize(): void
 	initialize: function (map, options) {
@@ -4340,13 +4340,7 @@ L.EditToolbar.Edit = L.Handler.extend({
 		// Save the type so super can fire, need to do this as cannot do this.TYPE :(
 		this.type = L.EditToolbar.Edit.TYPE;
 
-		var version = L.version.split('.');
-		//If Version is >= 1.2.0
-		if (parseInt(version[0], 10) === 1 && parseInt(version[1], 10) >= 2) {
-			L.EditToolbar.Edit.include(L.Evented.prototype);
-		} else {
-			L.EditToolbar.Edit.include(L.Mixin.Events);
-		}
+
 	},
 
 	// @method enable(): void
@@ -4614,6 +4608,7 @@ L.EditToolbar.Delete = L.Handler.extend({
 	statics: {
 		TYPE: 'remove' // not delete as delete is reserved in js
 	},
+	includes: [L.Draw.EventsMixin],
 
 	// @method intialize(): void
 	initialize: function (map, options) {
@@ -4630,14 +4625,6 @@ L.EditToolbar.Delete = L.Handler.extend({
 
 		// Save the type so super can fire, need to do this as cannot do this.TYPE :(
 		this.type = L.EditToolbar.Delete.TYPE;
-
-		var version = L.version.split('.');
-		//If Version is >= 1.2.0
-		if (parseInt(version[0], 10) === 1 && parseInt(version[1], 10) >= 2) {
-			L.EditToolbar.Delete.include(L.Evented.prototype);
-		} else {
-			L.EditToolbar.Delete.include(L.Mixin.Events);
-		}
 
 	},
 
